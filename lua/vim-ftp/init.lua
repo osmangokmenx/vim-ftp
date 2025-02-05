@@ -46,28 +46,28 @@ function M.upload()
     select_server(function(server)
         local remote_path = server.root .. rel_path
         local cmd = string.format(
-            "curl -T '%s' ftp://%s%s --user %s:%s --progress-bar",
+            "curl -T '%s' ftp://%s%s --user %s:%s --silent --show-error --write-out '%%{stderr}'",
             filepath, server.host, remote_path, server.user, server.password
         )
         
+        local stderr_output = {}
+
         vim.fn.jobstart(cmd, {
             on_stdout = function(_, data)
-                local cleaned_output = clean_data(data)
-                if cleaned_output ~= "" and not cleaned_output:match("^[=#]+$") then
-                    notify("Progress: " .. cleaned_output)
+                if data and #data > 0 then
+                    notify(table.concat(data, '\n'))
                 end
             end,
             on_stderr = function(_, data)
-                local cleaned_error = clean_data(data)
-                if cleaned_error ~= "" then
-                    notify("Error: " .. cleaned_error, vim.log.levels.ERROR)
+                if data and #data > 0 then
+                    table.insert(stderr_output, table.concat(data, '\n'))
                 end
             end,
             on_exit = function(_, code)
                 if code == 0 then
-                    notify("Uploaded to " .. remote_path, vim.log.levels.INFO)
+                    notify("✅ Uploaded to " .. remote_path, vim.log.levels.INFO)
                 else
-                    notify("Upload failed!", vim.log.levels.ERROR)
+                    notify("❌ Upload failed!\n" .. table.concat(stderr_output, '\n'), vim.log.levels.ERROR)
                 end
             end
         })
@@ -81,26 +81,28 @@ function M.download()
     select_server(function(server)
         local remote_path = server.root .. rel_path
         local cmd = string.format(
-            "curl -o '%s' ftp://%s%s --user %s:%s --progress-bar",
+            "curl -o '%s' ftp://%s%s --user %s:%s --silent --show-error --write-out '%%{stderr}'",
             filepath, server.host, remote_path, server.user, server.password
         )
-        
+
+        local stderr_output = {}
+
         vim.fn.jobstart(cmd, {
             on_stdout = function(_, data)
-                if data then
+                if data and #data > 0 then
                     notify(table.concat(data, '\n'))
                 end
             end,
             on_stderr = function(_, data)
-                if data then
-                    notify("Error: " .. table.concat(data, '\n'), vim.log.levels.ERROR)
+                if data and #data > 0 then
+                    table.insert(stderr_output, table.concat(data, '\n'))
                 end
             end,
             on_exit = function(_, code)
                 if code == 0 then
-                    notify("Downloaded from " .. remote_path, vim.log.levels.INFO)
+                    notify("✅ Downloaded from " .. remote_path, vim.log.levels.INFO)
                 else
-                    notify("Download failed!", vim.log.levels.ERROR)
+                    notify("❌ Download failed!\n" .. table.concat(stderr_output, '\n'), vim.log.levels.ERROR)
                 end
             end
         })
