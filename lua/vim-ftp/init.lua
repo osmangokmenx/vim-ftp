@@ -28,6 +28,17 @@ local function notify(msg, type)
     vim.notify(msg, type or vim.log.levels.INFO)
 end
 
+local function clean_data(data)
+    local result = {}
+    for _, line in ipairs(data) do
+        local cleaned = line:gsub("\r", "") -- ^M karakterlerini temizle
+        if cleaned ~= "" then
+            table.insert(result, cleaned)
+        end
+    end
+    return table.concat(result, "\n")
+end
+
 function M.upload()
     local filepath = vim.fn.expand('%:p')
     local rel_path = get_relative_path(filepath)
@@ -41,13 +52,15 @@ function M.upload()
         
         vim.fn.jobstart(cmd, {
             on_stdout = function(_, data)
-                if data then
-                    notify(table.concat(data, '\n'))
+                local cleaned_output = clean_data(data)
+                if cleaned_output ~= "" and not cleaned_output:match("^[=#]+$") then
+                    notify("Progress: " .. cleaned_output)
                 end
             end,
             on_stderr = function(_, data)
-                if data then
-                    notify("Error: " .. table.concat(data, '\n'), vim.log.levels.ERROR)
+                local cleaned_error = clean_data(data)
+                if cleaned_error ~= "" then
+                    notify("Error: " .. cleaned_error, vim.log.levels.ERROR)
                 end
             end,
             on_exit = function(_, code)
