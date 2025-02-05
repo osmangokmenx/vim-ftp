@@ -41,7 +41,14 @@ function M.upload()
         
         vim.fn.jobstart(cmd, {
             on_stdout = function(_, data)
-                if data then notify(table.concat(data, '\n')) end
+                if data then
+                    notify(table.concat(data, '\n'))
+                end
+            end,
+            on_stderr = function(_, data)
+                if data then
+                    notify("Error: " .. table.concat(data, '\n'), vim.log.levels.ERROR)
+                end
             end,
             on_exit = function(_, code)
                 if code == 0 then
@@ -67,7 +74,14 @@ function M.download()
         
         vim.fn.jobstart(cmd, {
             on_stdout = function(_, data)
-                if data then notify(table.concat(data, '\n')) end
+                if data then
+                    notify(table.concat(data, '\n'))
+                end
+            end,
+            on_stderr = function(_, data)
+                if data then
+                    notify("Error: " .. table.concat(data, '\n'), vim.log.levels.ERROR)
+                end
             end,
             on_exit = function(_, code)
                 if code == 0 then
