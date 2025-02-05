@@ -45,6 +45,8 @@ function M.upload()
     
     select_server(function(server)
         local remote_path = server.root .. rel_path
+        print(stderr)
+        print(filepath, server.host, remote_path, server.user, server.password)
         local cmd = string.format(
             "curl -T '%s' ftp://%s%s --user %s:%s --silent --show-error --write-out '%%{stderr}'",
             filepath, server.host, remote_path, server.user, server.password
