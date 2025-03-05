@@ -21,7 +21,8 @@ end
 
 local function get_relative_path(filepath)
     local cwd = vim.fn.getcwd()
-    return filepath:gsub(cwd, "")
+    local rel_path = filepath:gsub("^" .. vim.pesc(cwd), "") -- cwd'nin başta olup olmadığını güvenli şekilde kontrol et
+    return rel_path:gsub("^/*", "") -- Baştaki tüm `/` karakterlerini temizle
 end
 
 local function notify(msg, type)
