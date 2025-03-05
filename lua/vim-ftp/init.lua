@@ -48,7 +48,7 @@ function M.upload()
         print(stderr)
         print(filepath, server.host, remote_path, server.user, server.password)
         local cmd = string.format(
-            "curl -T '%s' ftp://%s%s --user %s:%s --silent --show-error --write-out '%%{stderr}'",
+            "curl -T '%s' ftp:/%s%s --user %s:%s --silent --show-error --write-out '%%{stderr}'",
             filepath, server.host, remote_path, server.user, server.password
         )
         
