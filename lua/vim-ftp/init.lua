@@ -8,13 +8,19 @@ end
 
 local function select_server(callback)
     local choices = {}
-    for name, _ in pairs(M.servers) do
-        table.insert(choices, name)
-    end
     
+    for _, server in ipairs(M.servers) do
+        table.insert(choices, server.name)
+    end
+
     vim.ui.select(choices, { prompt = "Select FTP Server:" }, function(choice)
         if choice then
-            callback(M.servers[choice])
+            for _, server in ipairs(M.servers) do
+                if server.name == choice then
+                    callback(server.config)
+                    break
+                end
+            end
         end
     end)
 end
